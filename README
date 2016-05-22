@@ -1,0 +1,47 @@
+This provides MyDef::output_www module.
+
+PREREQUISITE
+============
+
+MyDef (https://github.com/hzhou/MyDef) has to be installed and environment variable MYDEFSRC has to be set and point to MyDef source directory.
+
+FIRST TIME INSTALL
+==================
+
+    mydef_run
+
+This will create and initialize the perl package folder MyDef-output_wwww/ and create Makefile.
+
+    touch output_www.def
+
+The newly created MyDef-output_www/ folder contains output_www.pm that is newer than output_www.def. It is necessary to touch the def source file to trigger make to compile the def source.
+
+    make
+
+This compiles and produces perl files.
+
+    cd MyDef-output_www
+    perl Makefile.PL
+    make
+    make install
+
+Standard perl package build.
+
+    cd ..
+    mydef_make
+
+Refresh the Makefile so "make all" and "make install" will work.
+
+REFRESHING INSTALL
+==================
+
+Unless new def or new perl output is added, you can simply use
+
+    make
+    make all
+    make install
+
+to recompile and reinstall. 
+
+
+
