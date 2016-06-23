@@ -120,7 +120,7 @@ subcode: parsecode_func
     $if $func eq "script"
         MyDef::compileutil::modepush("js")
         &call return_newblock, script
-            $call push_indent_block
+            $call push_indented_block
             push @src, "PARSE:\$script_end"
     $elif $func eq "script_end"
         MyDef::compileutil::modepop()
