@@ -75,11 +75,17 @@ subcode: parsecode_html_tag
         $elif defined $quick_content
             push @$out, "$P <$func$attr>$quick_content</$func>"
         $elif $func eq "pre"
-            my @pre=("$P <$func$attr>", "PUSHDENT")
-            my @post=("POPDENT", "$P </$func>")
-            return single_block_pre_post(\@pre, \@post)
+            &call return_newblock, pre
+                push @src, "$P <$func$attr>"
+                push @src, "PUSHDENT"
+                push @src, "BLOCK"
+                push @src, "POPDENT"
+                push @src, "$P </$func>"
         $else
-            return single_block("$P <$func$attr>", "$P </$func>")
+            &call return_newblock, tag
+                push @src, "$P <$func$attr>"
+                $call push_indented_block
+                push @src, "$P </$func>"
         return 0
 
 # ------------------------------------------------------------

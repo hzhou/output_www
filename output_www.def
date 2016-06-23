@@ -119,11 +119,9 @@ subcode: parsecode_func
     $call parsecode_html_tag
     $if $func eq "script"
         MyDef::compileutil::modepush("js")
-        push @$out, "SOURCE_INDENT";
-        push @$out, "BLOCK";
-        push @$out, "SOURCE_DEDENT";
-        push @$out, "PARSE:\$script_end"
-        return "NEWBLOCK"
+        &call return_newblock, script
+            $call push_indent_block
+            push @src, "PARSE:\$script_end"
     $elif $func eq "script_end"
         MyDef::compileutil::modepop()
         return
