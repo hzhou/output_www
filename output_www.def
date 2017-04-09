@@ -22,7 +22,7 @@ subcode:: init_page
     $global $style_sheets
     $style_sheets=[]
 
-    $if $page->{pageext} eq "js"
+    $if $page->{_pageext} eq "js"
         $init_mode="js"
 
 subcode: modeswitch

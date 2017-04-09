@@ -1,0 +1,21 @@
+include: output.def
+include: macros_www/js.def
+
+page: output_js, output_main
+    type: pm
+    output_dir: lib/MyDef
+    ext: js
+    package: MyDef::output_js
+
+subcode: parsecode
+    $call parsecode_common
+
+subcode: parsecode_func_param
+    $call @js_parse_func_param
+
+subcode: parsecode_func
+    $call @js_parse_func
+
+subcode: parsecode_other
+    $call @js_parsecode_other
+
