@@ -1,7 +1,5 @@
 include: output.def
 include: macros_www/html.def
-# include: macros_www/php.def
-# include: macros_www/field.def
 
 page: output_www, output_main
     type: pm
