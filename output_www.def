@@ -1,8 +1,7 @@
 include: output.def
 include: macros_www/html.def
-include: macros_www/php.def
-include: macros_www/js.def
-include: macros_www/field.def
+# include: macros_www/php.def
+# include: macros_www/field.def
 
 page: output_www, output_main
     type: pm
@@ -22,9 +21,6 @@ subcode:: init_page
     $global $style_sheets
     $style_sheets=[]
 
-    $if $page->{_pageext} eq "js"
-        $init_mode="js"
-
 subcode: modeswitch
     # stackable mode : html -> js -> php
     $global @mode_stack
@@ -34,12 +30,6 @@ subcode: modeswitch
 
     $if $mode eq $cur_mode or $mode eq "sub"
         goto modeswitch_done
-
-    $if $cur_mode eq "PRINT"
-        $call popmode
-
-    $if $mode eq "PRINT"
-        $call pushmode
 
     $if $cur_mode eq "php"
         $call exit_php
@@ -59,38 +49,42 @@ subcode: modeswitch
 
     modeswitch_done:
 
-# --
-subcode: pushmode
-    push @mode_stack, $cur_mode
-    $cur_mode=$mode
-    goto modeswitch_done
+    # --
+    subcode: enter_js
+        MyDef::compileutil::push_interface("js")
+        push @$out, "<script type=\"text/javascript\">\n";
 
-subcode: popmode
-    $cur_mode=pop @mode_stack
-    $if $mode eq $cur_mode
+    subcode: exit_js
+        push @$out, "<\/script>\n"
+        MyDef::compileutil::pop_interface()
+
+    # --
+    subcode: enter_php
+        MyDef::compileutil::push_interface("php")
+        push @$out, "<?php\n"
+
+    subcode: exit_php
+        push @$out, "?>\n";
+        MyDef::compileutil::pop_interface()
+
+    # --
+    subcode: pushmode
+        push @mode_stack, $cur_mode
+        $cur_mode=$mode
         goto modeswitch_done
+
+    subcode: popmode
+        $cur_mode=pop @mode_stack
+        $if $mode eq $cur_mode
+            goto modeswitch_done
 # ------------------------
 subcode:: dumpout
-    $dump->{custom}=\&custom_dump
 
 subcode: parsecode
     $call parsecode_common
 
-subcode: parsecode_PRINT
-    $if $l=~/^(SUBBLOCK|SOURCE)/
-        push @$out, $l
-    $else
-        my $P="PRINT-".$mode_stack[-1]
-        $if $P eq "PRINT-html"
-            $l=~s/</&lt;/g
-            $l=~s/>/&gt;/g
-            push @$out, "$P $l"
-        $else
-            push @$out, $l
-    return 0
-
 subcode: parsecode_special
-    $if $l=~/^CSS:\s*(.*)/
+    $case $l=~/^CSS:\s*(.*)/
         my $t=$1
         $if $t=~/(.*?)\s*\{(.*)\}/
             $if $style->{$1}
@@ -101,19 +95,8 @@ subcode: parsecode_special
         $elif $t=~/(\S*\.css)/
             push @$style_sheets, $1
         return
-    $elif $l=~/^\s*PRINT\s+(.*)/
-        my $P="PRINT-$cur_mode"
-        push @$out, "$P $1"
-        return
-    $elif $cur_mode eq "js" && $l=~/^(\S+)\s*=\s*"(.*\$\w+.*)"\s*$/
-        push @$out, "$1=". js_string($2)
-        return
 
 subcode: parsecode_func_param
-    $if $cur_mode eq "js"
-        $call @js_parse_func_param
-    $elif $cur_mode eq "php"
-        $call @php_parse_func_param
 
 subcode: parsecode_func
     $call parsecode_html_tag
@@ -121,50 +104,14 @@ subcode: parsecode_func
         MyDef::compileutil::modepush("js")
         &call return_newblock, script
             $call push_indented_block
-            push @src, "PARSE:\$script_end"
-    $elif $func eq "script_end"
-        MyDef::compileutil::modepop()
-        return
+            push @src, "PARSE:MODEPOP"
     $elif $func=~/^(title|charset)/
         $page->{$1}=$2
         return
-    $elif $cur_mode eq "js"
-        $call @js_parse_func
-    $elif $cur_mode eq "php"
-        $call @php_parse_func
-    $elif $cur_mode eq "html"
-        $call @html_parse_func
+    $elif $func eq "include"
+        $call include_html_template
 
 subcode: parsecode_other
-    $if $cur_mode eq "php"
-        $call @php_parsecode_other
-    $elif $cur_mode eq "js"
-        $call @js_parsecode_other
-    $elif $cur_mode eq "html"
-        $call @html_parsecode_other
-
-subcode: check_inline_php
-    #print "check_inline_php $l\n";
-    $l=~s/(\$\w+)/<?php echo $1 ?>/g
-
-#-- support mydef_filter, which processes $t
-include: html/code.def
-
-subcode:: support_subs
-    $sub custom_dump
-        my ($f, $rl)=@_;
-        $if $$rl=~/\\span_(\w+)\{([^}]*)\}/
-            my $t="<span class=\"$1\">$2</span>";
-            $$rl=$`.$t.$';
-        $if $$rl=~/PRINT-(\w+) (.*)/
-            my $mode=$1;
-            my $t=$2;
-            $if $mode eq "php"
-                $$rl=echo_php($t)
-            $elif $mode eq "js"
-                $$rl="PRINT $t"
-            $else
-                $call mydef_filter
-                $$rl="PRINT $t"
-        return 0
+    $if $page->{type} eq "php"
+        $l=~s/(\$\w+)/<?php echo $1 ?>/g
 

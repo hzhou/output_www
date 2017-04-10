@@ -1,12 +1,14 @@
 subcode: code_css
-    CSS: pre {background-color: #ddd; margin: 4px 10px; padding-left: 20px}
-    CSS: .mydef-comment {color: #888;}
-    CSS: .mydef-label {color: #22f;}
-    CSS: .mydef-keyword {color: #494;}
+    CSS: pre {background-color: #ddd; margin: 4px 10px; padding-left: 20px;}
+    CSS: pre strong {color: #444; font-weight:700}
+    CSS: .mydef-comment {color: #888; font-style: italic}
+    CSS: .mydef-label  {color: #22f;}
+    CSS: .mydef-label2 {color: #228;}
+    CSS: .mydef-keyword {color: #444; font: serif}
     CSS: .mydef-preproc {color: #844;}
     CSS: .mydef-include {color: #444; text-decoration: underline;}
     CSS: .mydef-quote {color: #a2a;}
-    CSS: .mydef-macro {color: #494;}
+    CSS: .mydef-macro {color: #474;}
 
 #----------------------------------------------- 
 subcode: precode
@@ -23,9 +25,12 @@ perlcode: codeprint
     my $type
     $call grab_codelist
     $if !$codelist
+        my ($file, $pat)
         $if $param=~/(\w+),\s*(\S+),\s*(.*?)\s*$/
-            $type=$1
-            $call grab_file, $2, $3
+            ($type, $file, $pat)=($1, $2, $3)
+        $elif $param=~/(\w+),\s*(\S+)\s*$/
+            ($type, $file)=($1, $2)
+        $call grab_file
     $if !$type
         $if $param=~/(\w+)/
             $type=$1
@@ -40,59 +45,41 @@ perlcode: codeprint
         push @$out, "POPDENT"
         push @$out, "</code></pre>"
 
-subcode: grab_file(f, name)
-    my @t
-    my ($file, $pat)=($(f), $(name))
-    $if $file=~/def\/(.*)/
-        push @t, "#---- $1: $pat ----\n"
-    $elif $file=~/.*\/(.*)/
-        push @t, "#---- $1: $pat ----\n"
-    my $flag
-    $if open In, $file 
+    subcode: grab_file
+        my @t
+        my $fname=$file
+        $if $file=~/def\/(.*)/
+            $fname = $1
+        $elif $file=~/.*\/(.*)/
+            $fname = $1
+
         $if $pat
-            $while <In>
-                $if /^\#----\s*$pat\s*----/
-                    $flag=1
-                $elif /^\#----.*----/
-                    $flag=0
-                $elif !$flag and /^\s*#\s*--\s*$pat\s*--/
-                    $flag=2
-                $elif $flag==2 and /^\s*#\s*--.*--/
-                    $flag=0
-                $elif $flag
-                    push @t, $_
+            push @t, "#---- $fname: $pat ----\n"
         $else
-            $while <In>
-                push @t, $_
-        close In
-    $else
-        die "Can't open $file\n"
-    $while $t[-1]=~/^\s*$/
-        pop @t
-    $codelist=\@t
-
-subcode: grab_file_all(f)
-    my @t
-    my $file=$(f)
-    $if $file=~/.*\/(.*)/ and $type eq "mydef"
-        push @t, "#---- file: $1 ----\n"
-    &call open_r, $file
-        push @t, $_
-    $while $t[-1]=~/^\s*$/
-        pop @t
-    $codelist=\@t
-
-#---------------------------------------- 
-subcode: global_pattern(name, p)
-    $if $t=~/$(p)/
-        my @plist=split /($(p))/, $t
-        my @tlist
-        $foreach $p in @plist
-            $if $p=~/^$(p)$/
-                push @tlist, "<span class=\"mydef-$(name)\">$p</span>" 
+            push @t, "#---- file: $fname ----\n"
+        my $flag
+        $if open In, $file 
+            $if $pat
+                $while <In>
+                    $if /^\#----\s*$pat\s*----/
+                        $flag=1
+                    $elif /^\#----.*----/
+                        $flag=0
+                    $elif !$flag and /^\s*#\s*--\s*$pat\s*--/
+                        $flag=2
+                    $elif $flag==2 and /^\s*#\s*--.*--/
+                        $flag=0
+                    $elif $flag
+                        push @t, $_
             $else
-                push @tlist, $p
-        $t=join('', @tlist)
+                $while <In>
+                    push @t, $_
+            close In
+        $else
+            die "Can't open $file\n"
+        $while $t[-1]=~/^\s*$/
+            pop @t
+        $codelist=\@t
 
 #---------------------------------------- 
 subcode: code_filter
@@ -104,6 +91,19 @@ subcode: code_filter
         $call mydef_filter
     $elif $type eq "python"
         $call python_filter
+
+    # ---------------------------- 
+    subcode: global_pattern(name, p)
+        $if $t=~/$(p)/
+            my @plist=split /($(p))/, $t
+            my @tlist
+            $foreach $p in @plist
+                $if $p=~/^$(p)$/
+                    push @tlist, "<span class=\"mydef-$(name)\">$p</span>" 
+                $else
+                    push @tlist, $p
+            $t=join('', @tlist)
+
 
 #---------------------------------------- 
 subcode: mydef_filter
@@ -117,7 +117,7 @@ subcode: mydef_filter
         $t="$1$(span:comment, $2)"
     $elif $t=~/(.*)(\s(#|&#35;)\s.*)/
         $t="$1$(span:comment, $2)"
-    $elif $t=~/^(\s*)(page|\w+code)(:.?\s*)(\w+)(.*)/
+    $elif $t=~/(^)(page|\w+code)(:.?\s*)(\w+)(.*)/
         $t="$1$(span:label, $2)$3$(span:label, $4)$5"
     $elif $t=~/^(\s*)(macros):/
         $t="$1$(span:label, $2):"
@@ -125,10 +125,14 @@ subcode: mydef_filter
         $t="$1$(span:keyword, $2) <strong>$3</strong>$4"
     $elif $t=~/^(\s*)(CSS|include):\s*(.*)/
         $t="$1$(span:preproc, $2): $(span:preproc, $3)"
-    $elif $t=~/^(\s*)\$\b(if|while|do|switch|for|elif|elsif|else|function|if_match)\b(.*)/
+    $elif $t=~/^(\s*)(BLOCK)\b(.*)/
+        $t="$1$(span:keyword, $2)$3"
+    $elif $t=~/^(\s*)\$\b(if|while|do|switch|for|elif|elsif|else|function|if_match|global|local|my|temp)\b(.*)/
         $t="$1$(span:keyword,\$$2)$3"
     $elif $t=~/^(\s*)(return|throw|break|continue)(.*)/
         $t="$1$(span:label, $2)$3"
+    $elif $t=~/^(\s+)(\w+)(:.*)/
+        $t="$1$(span:label2, $2)$3"
 
 subcode: sh_filter
     $if $t=~/^(\s*)((#|&#35;).*)/
