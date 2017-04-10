@@ -1,0 +1,50 @@
+module: www
+
+page: test, js_frame
+    title: Test js_frame
+    
+subcode: content
+    CSS: h1 {border: 1px}
+    $h1
+        test with javascript
+    $p
+        Body of the test
+
+jscode:: js_onload
+    var t = "hello world"
+
+subcode: _autoload
+    # autoload ran by output_html
+    $(block:js_init)
+        var js_init = 'by output_www html mode (missing semicolon termination)'
+
+subcode: js_global
+    var js_global = 'via output_js'
+
+/*expect test.html:
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Test js_frame</title>
+        <style>
+            h1 {border: 1px}
+        </style>
+        <script type="text/javascript">
+            var js_init = 'by output_www html mode (missing semicolon termination)'
+            var js_global = 'via output_js';
+            window.onload = function(){
+                var t = "hello world";
+            };
+        </script>
+    </head>
+    <body>
+        <h1>
+            test with javascript
+        </h1>
+        <p>
+            Body of the test
+        </p>
+    </body>
+</html>
+*/

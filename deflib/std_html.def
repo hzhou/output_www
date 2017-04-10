@@ -1,0 +1,54 @@
+macros:
+    a: <a href="$2">$1</a>
+    url: <a href="$1">$1</a>
+    link: <a href="$($1)">$1</a>
+    anchor: <a name="$1"></a>
+
+    img: <img src="$1" />
+    code: <code>$1</code>
+    em: <em>$1</em>
+    b: <strong>$1</strong>
+
+## HTML ------------------------------------------------------
+subcode: meta_refresh(time, url)
+    PRINT <meta http-equiv="refresh" content="$(time);url=$(url)">
+
+subcode: js_src(url)
+    <script type="text/javascript" src="$(url)"></script>
+
+# form_input -- one row
+htmlcode: form_input(prompt, varname)
+    $tr
+        $td label
+            PRINT $(prompt)
+        $td input
+            $(if:varname~pass)
+                $call input_pass, $(varname)
+            $(else)
+                $call input_text, $(varname)
+
+htmlcode: input_hidden(name, value)
+    <input type="hidden" name="$(name)" value="$(value)">
+
+htmlcode: input_radio(name, value, label)
+    <input type="radio" name="$(name)" value="$(value)"> $(label) 
+
+htmlcode: input_checkbox(name, label)
+    <input type="checkbox" name="$(name)"> $(label)
+
+htmlcode: input_text(name)
+    <input type="text" class="textinput" name="$(name)">
+
+htmlcode: input_pass(name)
+    <input type="password" class="textinput" name="$(name)">
+
+htmlcode: input_submit(label)
+    <input type="submit" value="$(label)">
+
+htmlcode: input_option(value)
+    <option value="$(value)">$(value)</option>
+
+# ----
+htmlcode: form_input_one(name)
+    $call form_input, $(name), $(name)
+

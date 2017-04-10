@@ -1,0 +1,59 @@
+include: html/code.def
+
+page: test, basic_frame
+    module: www
+    run: echo View test.html in browser
+
+    $call css
+    # codeprint, file style
+    $call codeprint, mydef, codeprint.def
+    <hr/>
+    # codeprint, block style
+    &call codeprint, mydef
+        subcode: insertion_sort(A, N)
+            &#35; pick, find, shift, insert
+            &call pick_each, item
+                &call find_place
+                    &call shift
+                        $call insert
+
+            subcode: pick_each(item)
+                $my $(item)
+                $for i=1:$(N)
+                    $(item)=$(A)[i]
+                    BLOCK
+
+            subcode: find_place
+                j = 0
+                $while $(item)>$(A)[j] && j<i
+                    j++
+                BLOCK
+
+            subcode: shift
+                $if j<i
+                    $for k=i;k>j;k--
+                        $(A)[k] = $(A)[k-1]
+                    BLOCK
+
+            subcode: insert
+                $(A)[j] = $(item)
+
+
+
+subcode: css
+    CSS: pre {background-color: #ddd; margin: 4px 10px; padding-left: 20px;}
+    CSS: pre strong {color: #444; font-weight:700}
+    CSS: .mydef-comment {color: #888; font-style: italic}
+    CSS: .mydef-label  {color: #22f;}
+    CSS: .mydef-label2 {color: #228;}
+    CSS: .mydef-keyword {color: #444; font: serif}
+    CSS: .mydef-preproc {color: #844;}
+    CSS: .mydef-include {color: #444; text-decoration: underline;}
+    CSS: .mydef-quote {color: #a2a;}
+    CSS: .mydef-macro {color: #474;}
+
+
+
+
+
+
