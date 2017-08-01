@@ -1,0 +1,79 @@
+subcode: parsecode_html_tag(fn)
+    $(if:fn=-)
+        $(set:PRINT=$1)
+    $(else)
+        $(set:PRINT=$(fn)($1))
+
+    $(set:html=html|head|body)
+    $(set:basic=h[1-5]|p|pre)
+    $(set:block=div|span)
+    $(set:form=form|label|fieldset|button|input|textarea|select|option)
+    $(set:table=table|tr|td|th)
+    $(set:list=ol|ul|li)
+    $(set:misc=img|a|center|b|style)
+    $if $func =~ /^(tag|$(block)|$(list)|$(table)|$(basic)|$(html)|$(form)|$(misc))$/
+        my @tt_list=split /,\s*/, $param
+        $if $func ne "tag"
+            unshift @tt_list, $func
+        # ---- refer: deflib/perl/html.def ----
+        my ($func, $attr, $quick_content)= parse_tag_attributes(\@tt_list)
+
+        $if $func=~ /img|input/
+            push @$out, $(PRINT:"<$func$attr />")
+        $elif defined $quick_content
+            push @$out, $(PRINT:"<$func$attr>$quick_content</$func>")
+        $elif $func eq "pre"
+            &call return_newblock, pre
+                push @src, $(PRINT:"<$func$attr>")
+                push @src, "PUSHDENT"
+                push @src, "BLOCK"
+                push @src, "POPDENT"
+                push @src, $(PRINT:"</$func>")
+        $else
+            &call return_newblock, tag
+                push @src, $(PRINT:"<$func$attr>")
+                $call push_indented_block
+                push @src, $(PRINT:"</$func>")
+        return 0
+
+#---------------------------------------- 
+fncode: parse_tag_attributes($tt_list)
+    my $func=shift @$tt_list
+    my $attr=""
+    my $quick_content
+    $foreach $tt in @$tt_list
+        $if $tt eq "/"
+            $quick_content=""
+        $elsif $tt=~/^#(\S+)$/
+            # ---- ID ------------
+            $attr.=" id=\"$1\"";
+        $elif $tt=~/^(\S+?)[:=]"(.*)"/
+            # ---- Named Attribute ----
+            $attr.=" $1=\"$2\""
+        $elif $tt=~/^(\S+?)[:=](.*)/
+            $attr.=" $1=\"$2\""
+        $elif $tt=~/^"(.*)"/
+            # ---- Quick Content ----
+            $quick_content=$1
+        $else
+            # ---- Classes ----
+            $attr.=" class=\"$tt\"";
+
+    $call tag_input
+    $call tag_form
+    return ($func, $attr, $quick_content)
+
+    # -----------------------
+    subcode: tag_input
+        $case $func eq "input"
+            $if $attr !~ /type=/
+                $attr.=" type=\"text\""
+            $if $quick_content
+                $attr.=" placeholder=\"$quick_content\""
+    subcode: tag_form
+        $case $func eq "form"
+            $if $attr !~ /action=/
+                $attr.=" action=\"<?=\$_SERVER['PHP_SELF'] ?>\""
+            $if $attr !~ /method=/
+                $attr.=" method=\"POST\""
+
