@@ -1,5 +1,6 @@
 include: output.def
 include: macros_www/html.def
+include: macros_www/tags.def
 # include: macros_www/php.def
 # include: macros_www/field.def
 
@@ -85,22 +86,26 @@ subcode: parsecode
 
 subcode: parsecode_special
     $case $l=~/^CSS:\s*(.*)/
-        my $t=$1
-        $if $t=~/(.*?)\s*\{(.*)\}/
-            $if $style->{$1}
-                $style->{$1}.=";$2";
-            $else
-                $style->{$1}=$2;
-                push @style_key_list, $1;
-        $elif $t=~/(\S*\.css)/
-            push @$style_sheets, $1
-        return
+        return parse_css($1)
+
+fncode: parse_css($t)
+    $if $t=~/(.*?)\s*\{(.*)\}/
+        $if $style->{$1}
+            $style->{$1}.=";$2";
+        $else
+            $style->{$1}=$2;
+            push @style_key_list, $1;
+    $elif $t=~/(\S*\.css)/
+        push @$style_sheets, $1
 
 subcode: parsecode_func_param
 
 subcode: parsecode_func
-    $call parsecode_html_tag
-    $if $func eq "script"
+    $call parsecode_html_tag, -
+    $if $func eq "echo"
+        push @$out, $param
+        return
+    $elif $func eq "script"
         MyDef::compileutil::modepush("js")
         &call return_newblock, script
             $call push_indented_block

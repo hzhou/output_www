@@ -11,7 +11,7 @@ macros:
 
 ## HTML ------------------------------------------------------
 subcode: meta_refresh(time, url)
-    PRINT <meta http-equiv="refresh" content="$(time);url=$(url)">
+    $echo <meta http-equiv="refresh" content="$(time);url=$(url)">
 
 subcode: js_src(url)
     <script type="text/javascript" src="$(url)"></script>
@@ -20,7 +20,7 @@ subcode: js_src(url)
 htmlcode: form_input(prompt, varname)
     $tr
         $td label
-            PRINT $(prompt)
+            $echo $(prompt)
         $td input
             $(if:varname~pass)
                 $call input_pass, $(varname)
