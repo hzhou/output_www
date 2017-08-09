@@ -113,6 +113,9 @@ subcode:: parsecode_func_other
         push @$out, "console.log($param)"
         return
 
+fncode: find_var($v)
+    return {direct=>"\"+$v+\""}
+
 macros:
     printf_formats: s
 
