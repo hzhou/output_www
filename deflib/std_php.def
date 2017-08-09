@@ -5,16 +5,19 @@ phpcode: echobig(string)
 
 ## ---------------------------------------------------------------------
 phpcode: getparam(var)
+    $$(var)=""
     $if array_key_exists('$(var)', $_POST)
         $$(var)=$_POST['$(var)'];
     $elif array_key_exists('$(var)', $_GET)
         $$(var)=$_GET['$(var)'];
 
 phpcode: loadget(var)
+    $$(var)=""
     $if array_key_exists('$(var)', $_GET)
         $$(var)=$_GET['$(var)'];
 
 phpcode: loadpost(var)
+    $$(var)=""
     $if array_key_exists('$(var)', $_POST)
         $$(var)=$_POST['$(var)'];
 
