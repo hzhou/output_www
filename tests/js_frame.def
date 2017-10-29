@@ -3,7 +3,6 @@ module: www
 page: test, js_frame
     title: Test js_frame
     
-subcode: content
     CSS: h1 {border: 1px}
     $h1
         test with javascript
@@ -11,6 +10,7 @@ subcode: content
         Body of the test
 
 jscode:: js_onload
+    $global test_global=1
     var t = "hello world"
 
 subcode: _autoload
@@ -32,6 +32,7 @@ subcode: js_global
         </style>
         <script type="text/javascript">
             var js_init = 'by output_www html mode (missing semicolon termination)'
+            var test_global=1;  
             var js_global = 'via output_js';
             window.onload = function(){
                 var t = "hello world";

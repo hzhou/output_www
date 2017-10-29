@@ -54,6 +54,8 @@ subcode: modeswitch
     subcode: enter_js
         MyDef::compileutil::push_interface("js")
         push @$out, "<script type=\"text/javascript\">\n";
+        $global $enter_js_count
+        $enter_js_count++
 
     subcode: exit_js
         push @$out, "<\/script>\n"
@@ -80,6 +82,8 @@ subcode: modeswitch
             goto modeswitch_done
 # ------------------------
 subcode:: dumpout
+    $if $enter_js_count>0
+        MyDef::output_js::dump_js_globals()
 
 subcode: parsecode
     $call parsecode_common

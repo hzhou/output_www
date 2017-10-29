@@ -12,6 +12,9 @@ subcode:: init_page
     @js_globals=()
 
 subcode:: dumpout
+    dump_js_globals()
+
+fncode: dump_js_globals
     my $block=MyDef::compileutil::get_named_block("js_init")
     $foreach $v in @js_globals
         push @$block, "var $v;\n"
