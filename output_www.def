@@ -1,5 +1,8 @@
 include: output.def
 include: macros_www/html.def
+include: macros_www/tags.def
+# include: macros_www/php.def
+# include: macros_www/field.def
 
 page: output_www, output_main
     type: pm
@@ -51,6 +54,8 @@ subcode: modeswitch
     subcode: enter_js
         MyDef::compileutil::push_interface("js")
         push @$out, "<script type=\"text/javascript\">\n";
+        $global $enter_js_count
+        $enter_js_count++
 
     subcode: exit_js
         push @$out, "<\/script>\n"
@@ -77,28 +82,34 @@ subcode: modeswitch
             goto modeswitch_done
 # ------------------------
 subcode:: dumpout
+    $if $enter_js_count>0
+        MyDef::output_js::dump_js_globals()
 
 subcode: parsecode
     $call parsecode_common
 
 subcode: parsecode_special
     $case $l=~/^CSS:\s*(.*)/
-        my $t=$1
-        $if $t=~/(.*?)\s*\{(.*)\}/
-            $if $style->{$1}
-                $style->{$1}.=";$2";
-            $else
-                $style->{$1}=$2;
-                push @style_key_list, $1;
-        $elif $t=~/(\S*\.css)/
-            push @$style_sheets, $1
-        return
+        return parse_css($1)
+
+fncode: parse_css($t)
+    $if $t=~/(.*?)\s*\{(.*)\}/
+        $if $style->{$1}
+            $style->{$1}.=";$2";
+        $else
+            $style->{$1}=$2;
+            push @style_key_list, $1;
+    $elif $t=~/(\S*\.css)/
+        push @$style_sheets, $1
 
 subcode: parsecode_func_param
 
 subcode: parsecode_func
-    $call parsecode_html_tag
-    $if $func eq "script"
+    $call parsecode_html_tag, -
+    $if $func eq "echo"
+        push @$out, $param
+        return
+    $elif $func eq "script"
         MyDef::compileutil::modepush("js")
         &call return_newblock, script
             $call push_indented_block

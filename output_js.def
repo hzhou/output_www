@@ -12,6 +12,9 @@ subcode:: init_page
     @js_globals=()
 
 subcode:: dumpout
+    dump_js_globals()
+
+fncode: dump_js_globals
     my $block=MyDef::compileutil::get_named_block("js_init")
     $foreach $v in @js_globals
         push @$block, "var $v;\n"
@@ -53,9 +56,7 @@ subcode: parsecode_func
         return single_block("else{", "}")
     $elif $func eq "for" or $func eq "foreach"
         $call js_parse_for
-    $elif $func eq "print"
-        push @$out, "console.log($param);"
-        return 0
+    $call @parsecode_func_other
 
 subcode: js_parse_for
     $if $param=~/(\w+)=(.*?):(.*?)(:.*)?$/
@@ -98,3 +99,28 @@ fncode: js_string($t)
         $else
             $parts[$i]= "\"$parts[$i]\""
     return join(' + ', @parts)
+
+#---- $print ------------------
+include: macros_output/print.def
+subcode:: parsecode_func_other
+    $elif $func eq "print"
+        $param=~s/^\s+//
+        my ($n, $fmt)=fmt_string($param, 0)
+        $call get_print_to
+        $if !$print_to
+            push @$out, "console.log($fmt)"
+        $else
+            push @$out, "console.$print_to($fmt)"
+        return
+    $elif $func eq "dump"
+        push @$out, "console.log($param)"
+        return
+
+fncode: find_var($v)
+    return {direct=>"\"+$v+\""}
+
+macros:
+    printf_formats: s
+
+fncode: get_var_fmt($v, $warn)
+    return '%s'

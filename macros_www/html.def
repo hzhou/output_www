@@ -1,5 +1,3 @@
-include: perl/html.def
-
 subcode:: dumpout
     $(set:t=$MyDef::page->{type})
     $if $(t) && $(t) eq "css"
@@ -53,40 +51,6 @@ subcode: dump_style_list(type)
             push @$out, "$k {". join('; ', @tlist)."}\n";
         $(else)
             push @$(block), "    $k {". join('; ', @tlist)."}\n";
-# ------------------------------------------------------------
-subcode: parsecode_html_tag
-    $(set:html=html|head|body)
-    $(set:basic=h[1-5]|p|pre)
-    $(set:block=div|span)
-    $(set:form=form|label|fieldset|button|input|textarea|select|option)
-    $(set:table=table|tr|td|th)
-    $(set:list=ol|ul|li)
-    $(set:misc=img|a|center|b|style)
-    $if $func =~ /^(tag|$(block)|$(list)|$(table)|$(basic)|$(html)|$(form)|$(misc))$/
-        my @tt_list=split /,\s*/, $param
-        $if $func ne "tag"
-            unshift @tt_list, $func
-        # ---- refer: deflib/perl/html.def ----
-        my ($func, $attr, $quick_content)= parse_tag_attributes(\@tt_list)
-
-        $if $func=~ /img|input/
-            push @$out, "<$func$attr>"
-        $elif defined $quick_content
-            push @$out, "<$func$attr>$quick_content</$func>"
-        $elif $func eq "pre"
-            &call return_newblock, pre
-                push @src, "<$func$attr>"
-                push @src, "PUSHDENT"
-                push @src, "BLOCK"
-                push @src, "POPDENT"
-                push @src, "</$func>"
-        $else
-            &call return_newblock, tag
-                push @src, "<$func$attr>"
-                $call push_indented_block
-                push @src, "</$func>"
-        return 0
-
 # ------------------------------------------------------------
 subcode: include_html_template
     $if open my $in, $param

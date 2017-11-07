@@ -1,5 +1,6 @@
 page: test
     module: js
 
+    $print Hello world
     $for i=0:10
         $print i
