@@ -22,8 +22,9 @@ subcode: precode
 include: ext.def
 
 perlcode: codeprint
+    require MyDef::ext
+    my $codelist = MyDef::ext::grab_codelist()
     my $type
-    $call grab_codelist
     $if !$codelist
         my ($file, $pat)
         $if $param=~/(\w+),\s*(\S+),\s*(.*?)\s*$/
@@ -47,6 +48,8 @@ perlcode: codeprint
 
     subcode: grab_file
         my @t
+        $if $file eq "-"
+            $file = $MyDef::def->{file}
         my $fname=$file
         $if $file=~/def\/(.*)/
             $fname = $1
@@ -108,7 +111,7 @@ subcode: code_filter
 #---------------------------------------- 
 subcode: mydef_filter
     $(set:span=<span class=\"mydef-$1\">$2</span>)
-    #print "mydef_filter [$t]\n"
+    # print "mydef_filter [$t]\n"
     $if $t!~/</ 
         $call global_pattern, quote, ".*?"
         $call global_pattern, macro, \$\(.*?\) 
@@ -133,6 +136,8 @@ subcode: mydef_filter
         $t="$1$(span:label, $2)$3"
     $elif $t=~/^(\s+)(\w+)(:.*)/
         $t="$1$(span:label2, $2)$3"
+    $elif $t=~/^(\s*)(NEWLINE)/
+        $t="$1$(span:special, $2)"
 
 subcode: sh_filter
     $if $t=~/^(\s*)((#|&#35;).*)/
