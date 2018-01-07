@@ -87,7 +87,7 @@ perlcode: codeprint
 #---------------------------------------- 
 subcode: code_filter
     $(set:span=<span class=\"mydef-$1\">$2</span>)
-    $t=~s/&#35;/#/g
+    $t=~s/&(#35|num);/#/g
     $t=~s/&(?!call)/&amp;/g
     $t=~s/</&lt;/g
     $if $type eq "mydef"
