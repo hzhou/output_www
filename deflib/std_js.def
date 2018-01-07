@@ -52,11 +52,12 @@ jscode: setInterval(name, time)
         BLOCK
     }, $(time));
 
-jscode: animate
+jscode: animate(fps)
+    $(eval:dt=int(1000/$(fps)))
     $global time_old=0
     $function animate_update(time)
         var dt=time-time_old
-        $if dt>30
+        $if dt>$(dt)
             BLOCK
             time_old=time
         window.requestAnimationFrame(animate_update)
