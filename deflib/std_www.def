@@ -9,7 +9,7 @@ htmlcode: basic_frame
             $call @meta
             $call @script
         $body
-            $call @main2
+            $call @main
 
 #-----------------
 htmlcode: js_frame
@@ -25,7 +25,7 @@ htmlcode: js_frame
                 &call setf, window.onload
                     $call @js_onload
         $body
-            $call @main2
+            $call @main
 
 #-----------------
 htmlcode: php_frame
