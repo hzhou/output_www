@@ -34,6 +34,10 @@ subcode: parsecode_other
         $l.=';'
 
 subcode: parsecode_special
+    $elif $l=~/^CSS:\s*(.*)/ and defined &MyDef::output_www::parse_css
+        # jscode inside a www page
+        MyDef::output_www::parse_css($1)
+        return
     $elif $l=~/^(\S+)\s*=\s*"(.*\$\w+.*)"\s*$/
         push @$out, "$1=". js_string($2)
         return

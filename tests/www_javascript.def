@@ -1,18 +1,19 @@
+module: www
+
 page: test, js_frame
     title: MyDef Demo
 
-    subcode: content
-        $call templates
-        $h1
-            MyDef Demo
-        $p hint
-            CSS: .hint {color:#888;}
-            Editable code, click "Make" to see the translation.
+    $call templates
+    $h1
+        MyDef Demo
+    $p hint
+        CSS: .hint {color:#888;}
+        Editable code, click "Make" to see the translation.
 
-        $div #editor, /
-        $div #shell
-            $call shell
-        $div #output, /
+    $div #editor, /
+    $div #shell
+        $call shell
+    $div #output, /
 
 #---- layout ------------------------------------ 
 subcode:: meta
@@ -22,7 +23,7 @@ subcode:: meta
 subcode:: meta
     CSS: #editor { width: 900px; height: 400px; margin:10px; line-height: 1.5em;}
     CSS: #editor {border: 1px solid #555;}
-    CSS: #shell, { width: 900px; height: 100px; margin:10px;  line-height: 1.5em;}
+    CSS: #shell { width: 900px; height: 100px; margin:10px;  line-height: 1.5em;}
     CSS: #output { width: 900px; height: 500px;margin:10px;  line-height: 1.5em;}
     
 jscode:: js_onload
