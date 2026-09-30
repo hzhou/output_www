@@ -12,7 +12,7 @@ subcode: dumpmeta(block)
         $charset="utf-8"
     my $title=$page->{title}
     $if !$title
-        $title=$page->{pagename}
+        $title=$page->{_pagename}
     push @$(block), "<meta charset=\"$charset\">"
     push @$(block), "<title>$title</title>\n"
 

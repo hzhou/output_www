@@ -32,7 +32,7 @@ htmlcode: php_frame
     $call php_main
 
 phpcode: php_main
-    $call main2
+    $call @main
 
 #----------------------------------------------- 
 include: std_js.def

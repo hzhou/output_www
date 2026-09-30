@@ -29,7 +29,15 @@ subcode: modeswitch
 
     # print "modeswitch $cur_mode-> $mode\n"
 
-    $if $mode eq $cur_mode or $mode eq "sub"
+    # "sub" etc. inherit: use the nearest html/js/php mode on the stack
+    $if $mode!~/^(html|js|php)$/
+        $mode="html"
+        $foreach $m in reverse @MyDef::compileutil::mode_stack
+            $if $m=~/^(html|js|php)$/
+                $mode=$m
+                last
+
+    $if $mode eq $cur_mode
         goto modeswitch_done
 
     $if $cur_mode eq "php"
@@ -122,5 +130,10 @@ subcode: parsecode_func
 
 subcode: parsecode_other
     $if $page->{type} eq "php"
-        $l=~s/(\$\w+)/<?php echo $1 ?>/g
+        # leave existing <?...?> spans alone
+        my @parts=split /(<\?.*?\?>)/, $l
+        $foreach $t in @parts
+            $if $t!~/^<\?/
+                $t=~s/(\$\w+)/<?php echo $1 ?>/g
+        $l=join('', @parts)
 

@@ -72,8 +72,7 @@ fncode: parse_tag_attributes($tt_list)
                 $attr.=" placeholder=\"$quick_content\""
     subcode: tag_form
         $case $func eq "form"
-            $if $attr !~ /action=/
-                $attr.=" action=\"<?=\$_SERVER['PHP_SELF'] ?>\""
+            # no default action: the form submits to the current URL
             $if $attr !~ /method=/
                 $attr.=" method=\"POST\""
 
